@@ -70,13 +70,25 @@ runs:
         '64702f94-c441-49e6-a78b-ef80e0188fee'  # Azure AI Developer
         )
 
-        for roleId in "${roles[@]}"; do
-        az role assignment create \
-          --assignee-object-id "$principalId" \
-          --assignee-principal-type "ServicePrincipal" \
-          --role "$roleId" \
-          --scope "$scope"
-        done
+        echo "🔶🔶🔶MAUROMI MODIFIED ROLES ASSIGNMENT START"  
+          
+        for roleId in "${roles[@]}"; do  
+          # Check if the role assignment exists  
+          assignment=$(az role assignment list --assignee $principalId --scope $scope --role $roleId --query [].id -o tsv)  
+            
+          if [ -z "$assignment" ]; then  
+            az role assignment create \  
+              --assignee-object-id "$principalId" \  
+              --assignee-principal-type "ServicePrincipal" \  
+              --role "$roleId" \  
+              --scope "$scope"  
+          else  
+            echo "🔶🔶🔶MAUROMI: Role assignment already exists."  
+          fi  
+          
+        done  
+          
+        echo "🔶🔶🔶MAUROMI MODIFIED ROLES ASSIGNMENT END"  
 
 
     - name: Login to Azure Developer CLI 
@@ -165,7 +177,8 @@ runs:
           # Checking if the resource group exists
           export AZURE_RESOURCE_GROUP=$(azd env get-values -e ${{ inputs.AZURE_ENV_NAME }} | grep AZURE_RESOURCE_GROUP | cut -d'=' -f2 | tr -d '"' || true)
           if [ -z "$AZURE_RESOURCE_GROUP" ]; then
-            resource_group_exist=false
+            # 🔶🔶🔶MAUROMI should be false THE ERROR IS HERE!
+            resource_group_exist=true            
           else
             resource_group_exist=$(az group exists --name "$AZURE_RESOURCE_GROUP")  
           fi        
